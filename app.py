@@ -8,6 +8,7 @@ Uso: o usuário abre o link, envia a planilha CSV de processos, clica em
 Roda em Google Cloud Run (ver README_DEPLOY.md).
 """
 
+import hmac
 from datetime import datetime
 
 import streamlit as st
@@ -19,6 +20,30 @@ st.set_page_config(
     page_icon="⚖️",
     layout="centered",
 )
+
+
+# ── Proteção por senha (definida em st.secrets["APP_PASSWORD"]) ─────────────
+def checar_senha() -> bool:
+    senha_config = st.secrets.get("APP_PASSWORD", "")
+    if not senha_config:
+        return True  # sem senha configurada → acesso livre (ex.: rodando local)
+    if st.session_state.get("autenticado"):
+        return True
+
+    st.markdown("### 🔒 Acesso restrito")
+    with st.form("login"):
+        senha = st.text_input("Senha", type="password")
+        entrar = st.form_submit_button("Entrar", type="primary")
+    if entrar:
+        if hmac.compare_digest(senha, senha_config):
+            st.session_state.autenticado = True
+            st.rerun()
+        st.error("Senha incorreta.")
+    return False
+
+
+if not checar_senha():
+    st.stop()
 
 # ── Cabeçalho ────────────────────────────────────────────────────────────────
 st.markdown(

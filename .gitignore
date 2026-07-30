@@ -7,6 +7,9 @@ __pycache__/
 # Dados reais de cliente (processos SEBRAE) — não versionar
 processos_para_consulta*.csv
 
+# Segredos locais do Streamlit
+.streamlit/secrets.toml
+
 # Saídas geradas
 Resultado_Consulta_*.xlsx
 robo_log.txt
