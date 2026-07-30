@@ -1,0 +1,12 @@
+# Ambientes virtuais
+.venv/
+.venv_web/
+__pycache__/
+*.pyc
+
+# Dados reais de cliente (processos SEBRAE) — não versionar
+processos_para_consulta*.csv
+
+# Saídas geradas
+Resultado_Consulta_*.xlsx
+robo_log.txt

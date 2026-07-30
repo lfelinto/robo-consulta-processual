@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.xlsx
+*.csv
+robo_log.txt
+checkpoint_consulta.csv
+Consultar_Processos.bat
+robo_consulta_gui.py
+robo_consulta_processos.py
+*.md
