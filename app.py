@@ -118,30 +118,40 @@ else:
             st.warning("Nenhum resultado gerado.")
             st.stop()
 
+        # Guarda na sessão para o resultado sobreviver aos reruns do Streamlit
+        # (clique no botão de download, reconexão do WebSocket etc.)
         fim = datetime.now()
-        dur = int((fim - inicio).total_seconds())
-        arquivados = (df_res["ARQUIVADO DEFINITIVAMENTE"] == "✅ SIM").sum()
-        andamento = (df_res["ARQUIVADO DEFINITIVAMENTE"] == "❌ NÃO").sum()
-        verificar = len(df_res) - arquivados - andamento
+        st.session_state.resultado = {
+            "df": df_res,
+            "xlsx": core.gerar_xlsx(df_res, fim),
+            "nome": f"Resultado_Consulta_{fim.strftime('%Y-%m-%d_%H%M')}.xlsx",
+            "dur": int((fim - inicio).total_seconds()),
+        }
 
-        st.success(f"Consulta concluída em {dur // 60}min {dur % 60}s.")
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Total", len(df_res))
-        c2.metric("✅ Arquivados", int(arquivados))
-        c3.metric("❌ Em andamento", int(andamento))
-        c4.metric("❓ Verificar", int(verificar))
+# ── Passo 3: resultados (persistem entre reruns) ────────────────────────────
+res = st.session_state.get("resultado")
+if res:
+    df_res = res["df"]
+    dur = res["dur"]
+    arquivados = (df_res["ARQUIVADO DEFINITIVAMENTE"] == "✅ SIM").sum()
+    andamento = (df_res["ARQUIVADO DEFINITIVAMENTE"] == "❌ NÃO").sum()
+    verificar = len(df_res) - arquivados - andamento
 
-        xlsx = core.gerar_xlsx(df_res, fim)
-        nome = f"Resultado_Consulta_{fim.strftime('%Y-%m-%d_%H%M')}.xlsx"
+    st.success(f"Consulta concluída em {dur // 60}min {dur % 60}s.")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Total", len(df_res))
+    c2.metric("✅ Arquivados", int(arquivados))
+    c3.metric("❌ Em andamento", int(andamento))
+    c4.metric("❓ Verificar", int(verificar))
 
-        st.subheader("3. Baixar o resultado")
-        st.download_button(
-            "📊 Baixar relatório Excel",
-            data=xlsx,
-            file_name=nome,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            type="primary",
-            use_container_width=True,
-        )
-        with st.expander("Ver prévia dos resultados"):
-            st.dataframe(df_res, use_container_width=True, hide_index=True)
+    st.subheader("3. Baixar o resultado")
+    st.download_button(
+        "📊 Baixar relatório Excel",
+        data=res["xlsx"],
+        file_name=res["nome"],
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type="primary",
+        use_container_width=True,
+    )
+    with st.expander("Ver prévia dos resultados"):
+        st.dataframe(df_res, use_container_width=True, hide_index=True)
